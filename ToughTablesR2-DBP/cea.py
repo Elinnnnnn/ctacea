@@ -121,18 +121,34 @@ def get_column_label_with_llm(value,column_topic,values_in_the_row):
 
     # """
 
-    #不使用dbpedia lookup
+    # #不使用dbpedia lookup
+    # react_prompt = """  
+    # You are a highly intelligent data expert. You are given a cell from a table, 
+    # and your task is to give the most suitable dbpedia resource URl according
+    # to the semantic meaning of the cell, the column topic of the cell and the other cells in the row.
+    # You are asked to give the DBpedia URL. Don't explain.
+    
+    # For example: 
+    # Question: Please select the most suitable dbpedia resource URl: the entity is Abbeville; The column topic is City; the cells in the row is [Abbeville, Georgia, GA].
+    # Answer: http://dbpedia.org/resource/Elvis_Presley
+
+    # Please select the most suitable dbpedia resource URl: the entity is {value}; The column topic is {column_topic}; the cells in the row is {values_in_the_row}.
+
+    # """
+
     react_prompt = """  
     You are a highly intelligent data expert. You are given a cell from a table, 
-    and your task is to give the most suitable dbpedia resource URl according
-    to the semantic meaning of the cell, the column topic of the cell and the other cells in the row.
-    You are asked to give the DBpedia URL. Don't explain.
-    
+    and your task is to determine the most suitable dbpedia resource URl according
+    to the semantic meaning of the cell. When making decisions, you can refer to the
+      results of the previous cell. You are asked to give the url and don't explain.
+
     For example: 
-    Question: Please select the most suitable dbpedia resource URl: the entity is Abbeville; The column topic is City; the cells in the row is [Abbeville, Georgia, GA].
+    Question: Please Give the dbpedia resource URl of the entity type of the following
+    entity. The entity belongs to Singer; the entity is The  King of Rock 'n' Roll.
     Answer: http://dbpedia.org/resource/Elvis_Presley
 
-    Please select the most suitable dbpedia resource URl: the entity is {value}; The column topic is {column_topic}; the cells in the row is {values_in_the_row}.
+    Please Give the dbpedia resource URl of the entity type of the following entity. 
+    The entity belongs to {column_topic}; the entity is {value}.
 
     """
     #  from candidates for the cell value with help of the column topic and the other cells in the row.
