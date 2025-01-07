@@ -107,53 +107,20 @@ def get_column_label_with_llm(value,column_topic,values_in_the_row):
     :return: The predicted label for the cell.
     """
 
-    # react_prompt = """  
-    # You are a highly intelligent data expert. You are given a cell from a table, 
-    # and your task is to select the most suitable dbpedia resource URl from candidates according
-    # to the semantic meaning of the cell, the column topic of the cell and the other cells in the row.
-    # You are asked to give the DBpedia URL. Don't explain.
-    
-    # For example: 
-    # Question: Please select the most suitable dbpedia resource URl: the entity is Abbeville; the candidates are ['http://dbpedia.org/resource/Abbeville', 'http://dbpedia.org/resource/SC_Abbeville', 'http://dbpedia.org/resource/Abbeville,_South_Carolina', 'http://dbpedia.org/resource/Abbeville,_Louisiana', 'http://dbpedia.org/resource/Abbeville,_Alabama', 'http://dbpedia.org/resource/Abbeville_County,_South_Carolina', 'http://dbpedia.org/resource/Abbeville,_Georgia', 'http://dbpedia.org/resource/Aerodrome_Abbeville', 'http://dbpedia.org/resource/Arrondissement_of_Abbeville', 'http://dbpedia.org/resource/Vermilion_Parish,_Louisiana']; The column topic is City; the other cells in the row is [Abbeville, Georgia, GA].
-    # Answer: http://dbpedia.org/resource/Elvis_Presley
-
-    # Please select the most suitable dbpedia resource URl: the entity is {value}; the candidates are {db_resources}; The column topic is {column_topic}; the other cells in the row is {values_in_the_row}.
-
-    # """
-
-    # #不使用dbpedia lookup
-    # react_prompt = """  
-    # You are a highly intelligent data expert. You are given a cell from a table, 
-    # and your task is to give the most suitable dbpedia resource URl according
-    # to the semantic meaning of the cell, the column topic of the cell and the other cells in the row.
-    # You are asked to give the DBpedia URL. Don't explain.
-    
-    # For example: 
-    # Question: Please select the most suitable dbpedia resource URl: the entity is Abbeville; The column topic is City; the cells in the row is [Abbeville, Georgia, GA].
-    # Answer: http://dbpedia.org/resource/Elvis_Presley
-
-    # Please select the most suitable dbpedia resource URl: the entity is {value}; The column topic is {column_topic}; the cells in the row is {values_in_the_row}.
-
-    # """
-
-
-    #  from candidates for the cell value with help of the column topic and the other cells in the row.
-
     react_prompt = """  
     You are a highly intelligent data expert. You are given a cell from a table, 
-    and your task is to determine the most suitable dbpedia resource URl according
-    to the semantic meaning of the cell. When making decisions, you can refer to the
-      results of the previous cell. You are asked to give the url and don't explain.
-
+    and your task is to select the most suitable dbpedia resource URl from candidates according
+    to the semantic meaning of the cell, the column topic of the cell and the other cells in the row.
+    You are asked to give the DBpedia URL. Don't explain.
+    
     For example: 
-    Question: Please Give the dbpedia resource URl of the entity type of the following
-    entity. The entity belongs to Singer; the entity is The  King of Rock 'n' Roll.
+    Question: Please select the most suitable dbpedia resource URl: the entity is Abbeville; the candidates are ['http://dbpedia.org/resource/Abbeville', 'http://dbpedia.org/resource/SC_Abbeville', 'http://dbpedia.org/resource/Abbeville,_South_Carolina', 'http://dbpedia.org/resource/Abbeville,_Louisiana', 'http://dbpedia.org/resource/Abbeville,_Alabama', 'http://dbpedia.org/resource/Abbeville_County,_South_Carolina', 'http://dbpedia.org/resource/Abbeville,_Georgia', 'http://dbpedia.org/resource/Aerodrome_Abbeville', 'http://dbpedia.org/resource/Arrondissement_of_Abbeville', 'http://dbpedia.org/resource/Vermilion_Parish,_Louisiana']; The column topic is City; the other cells in the row is [Abbeville, Georgia, GA].
     Answer: http://dbpedia.org/resource/Elvis_Presley
 
-    Please Give the dbpedia resource URl of the entity type of the following entity. 
-    The entity belongs to {column_topic}; the entity is {value}.
+    Please select the most suitable dbpedia resource URl: the entity is {value}; The column topic is {column_topic}; the other cells in the row is {values_in_the_row}.
 
     """
+
 
     # # 只取前五个最频繁的类 URI
     # top_classes = summary[:5]
@@ -257,7 +224,7 @@ def process_csv_files(input_dir):
     return label_list
 
 
-input_dir_path = r"/home/gengyilin/CTA/ToughTablesR2-DBP/test"
+input_dir_path = r"/home/gengyilin/CTA/ToughTablesR2-DBP/test/1B"
 
 # 执行处理
 label = process_csv_files(input_dir_path)
@@ -266,39 +233,12 @@ label = process_csv_files(input_dir_path)
 # print(f"label: {label}")
 # print(label[0])
 
-    #将结果写入文件
-# input_file = r"/home/gengyilin/CTA/ToughTablesR2-DBP/test_gt/cea_sub1.csv"  # 输入文件的绝对路径
-# output_file = r"/home/gengyilin/CTA/ToughTablesR2-DBP/DataSets/ToughTablesR2-DBP/Submissions/cea_test/test.csv"  # 输出文件的绝对路径
+#将结果写入文件
 file_path = "/home/gengyilin/CTA/ToughTablesR2-DBP/test_result/test.csv"
 
 # 使用'w'模式打开文件，表示写入模式
 with open(file_path, 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerows(label)
-    # 写入每一行
-    # for row in label:
-    #     # row[row_index] = label[row_index]
-    #     writer.writerows(row)
 
 print(f"内容已写入到文件 {file_path}")
-
-
-# column_index_to_update = 0  # 第4列，索引从0开始
-
-# with open(input_file, mode="r", newline='', encoding="utf-8") as infile, \
-#      open(output_file, mode="w", newline='', encoding="utf-8") as outfile:
-#      reader = csv.reader(infile)
-#      writer = csv.writer(outfile)
-
-
-#      for row_index, row in enumerate(reader):
-#         # 如果需要写入的数据不足，填充空行
-#         while len(row) <= column_index_to_update:
-#             row.append('')
-        
-#         # 写入新数据到指定列
-#         if row_index < len(label):  # 避免索引越界
-#             row[column_index_to_update] = label[row_index]
-        
-#         writer.writerow(row)
-# print(f"新内容已写入 {output_file}")
