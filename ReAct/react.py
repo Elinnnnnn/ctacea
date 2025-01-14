@@ -8,6 +8,7 @@ from langchain.schema import HumanMessage
 import csv
 import json
 import re
+import pandas as pd
 load_dotenv()
 
 # 加载环境变量
@@ -37,7 +38,7 @@ def save_results(label,file_path): #列表，文件路径 将结果按行写入�
 
     print(f"内容已写入到文件 {file_path}")
 
-def read_file(file_path): #列表，文件路径 将文件按列写入列表 不读取第一行
+def read_file_noheader(file_path): #列表，文件路径 将文件按列写入列表 不读取第一行
     with open(file_path, 'r', encoding='utf-8') as file:
         reader = csv.reader(file)
         headers = next(reader)  # 读取表头
@@ -107,7 +108,7 @@ def get_column_topic_with_llm(input_dir):
             print(f"\nProcessing file: {filename}")
 
             # 读取 CSV 文件
-            columns = read_file(file_path)
+            columns = read_file_noheader(file_path)
           
          #存储注释结果
             column_topics = [] #该表的各列列主题
@@ -177,20 +178,21 @@ def get_cell_entity_with_llm(column_topics_all):
     table_num = 0
     column_topic_num = 0
     for filename in os.listdir(input_dir): #i表序号
+
         if filename.endswith('.csv'):
             file_path = os.path.join(input_dir, filename)
             
             print(f"\nProcessing file: {filename}")
 
-            # 读取 CSV 文件
-            columns = read_file(file_path)
             
+            columns = read_file_noheader(file_path) # 按列读取 CSV 文件为列表
+            df = pd.read_csv(file_path) #读取csv文件，便于读取每行内容
             #存储该表注释结果
             cea_row = []
             cea_rows = []
 
             col_num = 0
-            for column in columns: # j列序号
+            for column in columns: 
                 # column_topic = column_topics[col_topic_num][2]
                 # column_topic_value = column_topics_all[table_num][col_num]
                 column_topic_value = column_topics_all[2][column_topic_num]
@@ -207,12 +209,14 @@ def get_cell_entity_with_llm(column_topics_all):
                     Question: Please select the most suitable dbpedia resource URl: the entity is 'The  King of Rock 'n' Roll'.
                     Answer: http://dbpedia.org/resource/Elvis_Presley
 
-                    Please give the most suitable dbpedia resource URl: the entity is {value}, the cell of column topic is {column_topic_value}.
+                    Please give the most suitable dbpedia resource URl: the entity is {value}, the cell of column topic is {column_topic_value}, the other cells in the row is {values_in_the_row}.
 
                     """
                     pattern = r'^-?\d+(\.\d+)?$'
                     if value and (not(re.match(pattern, value))): #如果value不为空 并且value不是数字 
-                        formatted_prompt = react_prompt.format(value = value, column_topic_value = column_topic_value)
+
+                        values_in_the_row = df.iloc[row_num] #第row_num行的内容
+                        formatted_prompt = react_prompt.format(value = value, column_topic_value = column_topic_value, values_in_the_row = values_in_the_row)
                         # print("-----------------------------------")
                         # print(formatted_prompt)
 
